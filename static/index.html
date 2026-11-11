@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Rang — AI Image Studio</title>
+<meta name="description" content="Rang is an AI image studio. Describe a scene, get a picture, keep a gallery. Deterministic, explainable, no black box." />
+<meta name="theme-color" content="#0b0a10" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+
+<!-- ── auth gate ───────────────────────────────────────────── -->
+<div id="authScreen" class="auth-screen">
+  <div class="auth-card">
+    <div class="brand-mark" aria-hidden="true">
+      <span class="swatch s1"></span><span class="swatch s2"></span>
+      <span class="swatch s3"></span><span class="swatch s4"></span>
+    </div>
+    <h1 class="auth-title">Rang</h1>
+    <p class="auth-sub">رنگ — an image studio that shows its work.</p>
+
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="login" role="tab" aria-selected="true">Sign in</button>
+      <button class="tab" data-tab="register" role="tab" aria-selected="false">Create account</button>
+    </div>
+
+    <form id="loginForm" class="auth-form" autocomplete="on">
+      <label class="field">
+        <span>Email</span>
+        <input type="email" name="email" required autocomplete="email" placeholder="you@example.com" />
+      </label>
+      <label class="field">
+        <span>Password</span>
+        <input type="password" name="password" required autocomplete="current-password" placeholder="••••••••" />
+      </label>
+      <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+      <p class="hint">Demo account: <code>demo@rang.pk</code> / <code>rangdemo12345</code></p>
+    </form>
+
+    <form id="registerForm" class="auth-form hidden" autocomplete="on">
+      <label class="field">
+        <span>Name</span>
+        <input type="text" name="display_name" required minlength="2" maxlength="80" placeholder="Your name" />
+      </label>
+      <label class="field">
+        <span>Email</span>
+        <input type="email" name="email" required autocomplete="email" placeholder="you@example.com" />
+      </label>
+      <label class="field">
+        <span>Password</span>
+        <input type="password" name="password" required minlength="8" autocomplete="new-password" placeholder="At least 8 characters" />
+      </label>
+      <button type="submit" class="btn btn-primary btn-block">Create account</button>
+    </form>
+
+    <p id="authError" class="error hidden" role="alert"></p>
+  </div>
+</div>
+
+<!-- ── app ─────────────────────────────────────────────────── -->
+<div id="app" class="app hidden">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand-mark small" aria-hidden="true">
+        <span class="swatch s1"></span><span class="swatch s2"></span>
+        <span class="swatch s3"></span><span class="swatch s4"></span>
+      </div>
+      <span class="wordmark">Rang</span>
+    </div>
+    <div class="topbar-right">
+      <span id="userName" class="user-name"></span>
+      <button id="logoutBtn" class="btn btn-ghost btn-sm">Sign out</button>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <!-- composer -->
+    <section class="composer" aria-label="Create an image">
+      <h2 class="section-title">Compose</h2>
+
+      <form id="genForm">
+        <label class="field">
+          <span>Prompt</span>
+          <textarea id="prompt" name="prompt" rows="4" required minlength="3" maxlength="800"
+            placeholder="A cinematic mountain range at golden hour, snow caps catching the last light"></textarea>
+          <span class="counter"><span id="promptCount">0</span>/800</span>
+        </label>
+
+        <label class="field">
+          <span>Negative prompt <em>(optional)</em></span>
+          <input type="text" id="negative" name="negative_prompt" maxlength="400"
+            placeholder="blurry, text, watermark" />
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Style</span>
+            <select id="style" name="style">
+              <option value="cinematic">Cinematic</option>
+              <option value="neon">Neon</option>
+              <option value="watercolor">Watercolour</option>
+              <option value="minimal">Minimal</option>
+              <option value="retro">Retro</option>
+              <option value="dreamy">Dreamy</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Ratio</span>
+            <select id="ratio" name="aspect_ratio">
+              <option value="1:1">1:1 Square</option>
+              <option value="16:9">16:9 Wide</option>
+              <option value="9:16">9:16 Vertical</option>
+              <option value="3:2">3:2 Photo</option>
+              <option value="2:3">2:3 Portrait</option>
+              <option value="4:5">4:5 Feed</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="field">
+          <span>Seed <em>(optional — same seed, same picture)</em></span>
+          <input type="number" id="seed" name="seed" min="0" max="2147483647" placeholder="random" />
+        </label>
+
+        <div id="previewBox" class="preview-box hidden">
+          <div class="preview-head">What the parser understood</div>
+          <div id="previewChips" class="chips"></div>
+        </div>
+
+        <button type="submit" id="genBtn" class="btn btn-primary btn-block">
+          <span class="btn-label">Generate</span>
+          <span class="spinner hidden" aria-hidden="true"></span>
+        </button>
+      </form>
+
+      <div class="tips">
+        <p class="tips-title">Try</p>
+        <div id="tipChips" class="chips"></div>
+      </div>
+    </section>
+
+    <!-- gallery -->
+    <section class="gallery-wrap" aria-label="Gallery">
+      <div class="gallery-head">
+        <h2 class="section-title">Gallery <span id="galleryCount" class="count"></span></h2>
+        <div class="gallery-tools">
+          <input type="search" id="search" placeholder="Search prompts…" maxlength="200" />
+          <button id="favFilter" class="btn btn-ghost btn-sm" aria-pressed="false">★ Favourites</button>
+        </div>
+      </div>
+
+      <div id="gallery" class="gallery"></div>
+      <div id="emptyState" class="empty hidden">
+        <p class="empty-title">Nothing here yet</p>
+        <p class="empty-sub">Write a prompt on the left and hit Generate. Your first picture lands here.</p>
+      </div>
+      <div id="loadMoreWrap" class="load-more hidden">
+        <button id="loadMore" class="btn btn-ghost">Load more</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ── lightbox ────────────────────────────────────────────── -->
+<div id="lightbox" class="lightbox hidden" role="dialog" aria-modal="true" aria-label="Image detail">
+  <button id="lbClose" class="lb-close" aria-label="Close">×</button>
+  <div class="lb-inner">
+    <div class="lb-image-wrap">
+      <img id="lbImage" alt="" />
+    </div>
+    <aside class="lb-meta">
+      <p id="lbPrompt" class="lb-prompt"></p>
+      <dl class="lb-facts">
+        <div><dt>Style</dt><dd id="lbStyle"></dd></div>
+        <div><dt>Ratio</dt><dd id="lbRatio"></dd></div>
+        <div><dt>Size</dt><dd id="lbSize"></dd></div>
+        <div><dt>Seed</dt><dd id="lbSeed"></dd></div>
+        <div><dt>Provider</dt><dd id="lbProvider"></dd></div>
+        <div><dt>Render</dt><dd id="lbRender"></dd></div>
+        <div><dt>Created</dt><dd id="lbCreated"></dd></div>
+      </dl>
+      <div class="lb-actions">
+        <button id="lbFav" class="btn btn-ghost btn-sm">★ Favourite</button>
+        <a id="lbDownload" class="btn btn-ghost btn-sm" download>Download</a>
+        <button id="lbDelete" class="btn btn-danger btn-sm">Delete</button>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
