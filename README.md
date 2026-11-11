@@ -6,7 +6,7 @@ Rang is a full-stack image generation studio. It parses your prompt into a
 structured scene, renders it deterministically, and shows you exactly what it
 understood — so the same prompt and seed always give you the same image.
 
-![Rang gallery](screenshots/gallery.png)
+![Rang gallery](screenshots/gallery.jpg)
 
 ---
 
@@ -51,11 +51,11 @@ don't need it to use the app.
 
 | Composer | Gallery |
 |---|---|
-| ![Composer](screenshots/composer.png) | ![Gallery](screenshots/gallery.png) |
+| ![Composer](screenshots/composer.jpg) | ![Gallery](screenshots/gallery.jpg) |
 
 | Detail view | Mobile |
 |---|---|
-| ![Detail](screenshots/detail.png) | ![Mobile](screenshots/mobile.png) |
+| ![Detail](screenshots/detail.jpg) | ![Mobile](screenshots/mobile.jpg) |
 
 ---
 
