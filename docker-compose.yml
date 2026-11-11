@@ -1,0 +1,34 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: rang
+      POSTGRES_PASSWORD: rang
+      POSTGRES_DB: rang
+    ports:
+      - "5432:5432"
+    volumes:
+      - rang_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rang -d rang"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://rang:rang@db:5432/rang
+      SECRET_KEY: ${SECRET_KEY:-dev-only-change-me}
+      IMAGE_PROVIDER: ${IMAGE_PROVIDER:-local}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  rang_pgdata:
